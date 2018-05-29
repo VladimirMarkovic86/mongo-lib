@@ -1,11 +1,25 @@
 (ns mongo-lib.core
-  (:import [com.mongodb MongoClient
+  (:import [java.lang Boolean
+                      Long
+                      String
+                      Double]
+           [java.util Date
+                      ArrayList]
+           [com.mongodb MongoClient
                         MongoCredential
                         MongoClientOptions
                         ServerAddress]
            [com.mongodb.client.model Collation
                                      CollationCaseFirst]
-           [org.bson Document]
+           [org.bson Document
+                     BsonDocument
+                     BsonArray
+                     BsonObjectId
+                     BsonString
+                     BsonBoolean
+                     BsonInt64
+                     BsonDouble
+                     BsonDateTime]
            [org.bson.types ObjectId]))
 
 (def conn (atom nil))
@@ -26,7 +40,7 @@
     (swap! conn
            (fn [conn-input]
             (MongoClient. (ServerAddress. host
-                                        port)
+                                          port)
                           cred
                           (.build (MongoClientOptions/builder))
              ))
@@ -44,26 +58,68 @@
   (.close @conn))
 
 (defn get-collection
-  ""
-  [db
-   collection-name]
+ ""
+ [db
+  collection-name
+  & [document-class]]
+ (if (nil? document-class)
   (.getCollection @db
-                  collection-name))
+                  collection-name)
+  (.getCollection @db
+                  collection-name
+                  document-class))
+ )
 
 (defn build-document
-  ""
-  [clj-map]
-  (let [result  (Document.)]
+ ""
+ [clj-document
+  & [data-type]]
+ (let [data-if-tree-fn (fn [c-value-p]
+                        (if (map? c-value-p)
+                          (build-document c-value-p)
+                          (if (vector? c-value-p)
+                           (build-document c-value-p "array")
+                           (let [new-value (atom c-value-p)]
+                               (when (instance? Boolean
+                                                c-value-p)
+                                (reset! new-value (BsonBoolean. c-value-p))
+                                )
+                               (when (instance? Long
+                                                c-value-p)
+                                (reset! new-value (BsonInt64. c-value-p))
+                                )
+                               (when (instance? String
+                                                c-value-p)
+                                (reset! new-value (BsonString. c-value-p))
+                                )
+                               (when (instance? Double
+                                                c-value-p)
+                                (reset! new-value (BsonDouble. c-value-p))
+                                )
+                               (when (instance? Date
+                                                c-value-p)
+                                (reset! new-value (BsonDateTime. (.getTime c-value-p)))
+                                )
+                               @new-value))
+                          ))]
+ (if (= data-type
+        "array")
+  (let [result  (BsonArray.)]
+   (reduce (fn [acc c-value]
+            (.add result (data-if-tree-fn c-value))
+            result)
+           result
+           clj-document))
+  (let [result  (BsonDocument.)]
    (reduce (fn [acc [c-key
                      c-value]]
             (.append result (name c-key)
-                            (if (map? c-value)
-                             (build-document c-value)
-                             c-value))
+                            (data-if-tree-fn c-value))
             )
            result
-           clj-map))
-  )
+           clj-document))
+  ))
+ )
 
 (defn build-collation
   ""
@@ -82,6 +138,43 @@
     nil)
    (.build collation-builder))
   )
+
+(defn build-clojure-document
+ ""
+ [data-value]
+ (let [result-value (atom nil)]
+  (when (instance? ArrayList
+                   data-value)
+   (reset! result-value [])
+   (doseq [elem data-value]
+    (swap!
+      result-value
+      conj
+      (build-clojure-document elem))
+    ))
+  (when (instance? Document
+                   data-value)
+   (reset! result-value {})
+   (doseq [e-key (vec (.keySet data-value))]
+    (swap!
+      result-value
+      assoc
+      (keyword e-key)
+      (if (= e-key "_id")
+       (str (.get data-value (str e-key))
+        )
+       (build-clojure-document (.get data-value (str e-key))
+        ))
+     ))
+   )
+  (when (not
+         (or (instance? ArrayList
+                        data-value)
+             (instance? Document
+                        data-value))
+         )
+   (reset! result-value data-value))
+  @result-value))
 
 (defn mongodb-find
   ""
@@ -109,20 +202,13 @@
                                    (.skip skip)
                                    (.collation collation-obj)
                                 ))
-        result-all  (atom [])
-        result-single  (atom {})]
+        result-all  (atom [])]
    (while (.hasNext itr-result)
-    (let [data (.next itr-result)]
-     (doseq [e-key (vec (.keySet data))]
-      (swap! result-single assoc (keyword e-key) (if (= e-key "_id")
-                                                  (str (.get data (str e-key))
-                                                   )
-                                                  (.get data (str e-key))
-                                                  ))
-      )
-     (swap! result-all conj @result-single)
-     (reset! result-single {}))
-    )
+    (swap!
+      result-all
+      conj
+      (build-clojure-document (.next itr-result))
+     ))
    @result-all))
 
 (defn mongodb-find-one
@@ -142,7 +228,7 @@
   [collection
    _id]
   (first (mongodb-find collection
-                       {:_id (ObjectId. _id)}
+                       {:_id (BsonObjectId. (ObjectId. _id))}
                        nil
                        nil
                        1))
@@ -154,10 +240,11 @@
    insert-document]
   (let [collection  (if (string? collection)
                      (get-collection db
-                                     collection)
+                                     collection
+                                     BsonDocument)
                      collection)]
-   (.insertOne collection (build-document insert-document)))
-  )
+   (.insertOne collection (build-document insert-document))
+   ))
 
 (defn mongodb-insert-many
   ""
@@ -183,7 +270,7 @@
                      (get-collection db
                                      collection)
                      collection)]
-   (.updateOne collection (build-document {:_id (ObjectId. _id)})
+   (.updateOne collection (build-document {:_id (BsonObjectId. (ObjectId. _id))})
                           (build-document {:$set update-document}))
    ))
 
@@ -195,7 +282,7 @@
                      (get-collection db
                                      collection)
                      collection)]
-   (.deleteOne collection (build-document {:_id (ObjectId. _id)}))
+   (.deleteOne collection (build-document {:_id (BsonObjectId. (ObjectId. _id))}))
    ))
 
 (defn mongodb-count
