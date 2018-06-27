@@ -296,6 +296,17 @@
    (.count collection (build-document entity-filter))
    ))
 
+(defn mongodb-exists
+  ""
+  [collection
+   & [entity-filter]]
+  (let [count-result (mongodb-count
+                       collection
+                       entity-filter)]
+    (> count-result
+       0))
+ )
+
 (defn pretty-print
   ""
   []
