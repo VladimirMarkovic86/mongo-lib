@@ -10,7 +10,8 @@
                         MongoClientOptions
                         ServerAddress]
            [com.mongodb.client.model Collation
-                                     CollationCaseFirst]
+                                     CollationCaseFirst
+                                     IndexOptions]
            [org.bson Document
                      BsonDocument
                      BsonArray
@@ -307,6 +308,56 @@
        0))
  )
 
+(defn mongodb-create-index
+  ""
+  [collection
+   fields
+   index-name
+   unique]
+  (let [collection (if (string? collection)
+                     (get-collection db
+                                     collection)
+                     collection)
+        index-options (-> (IndexOptions.)
+                          (.unique  unique)
+                          (.name index-name))]
+    (.createIndex
+      collection
+      (build-document
+        fields)
+      index-options))
+ )
+
+(defn mongodb-list-indexes
+  ""
+  [collection]
+  (let [collection (if (string? collection)
+                     (get-collection db
+                                     collection)
+                     collection)
+        indexes-list (.listIndexes
+                       collection)
+        indexes-vector (atom [])]
+    (doseq [index indexes-list]
+      (swap!
+        indexes-vector
+        conj
+        (build-clojure-document
+          index))
+      )
+    @indexes-vector))
+
+(defn mongodb-drop-index
+  ""
+  [collection
+   index-name]
+  (let [collection (if (string? collection)
+                     (get-collection db
+                                     collection)
+                     collection)]
+    (.dropIndex collection index-name))
+  )
+
 (defn pretty-print
   ""
   []
@@ -319,7 +370,7 @@
                              0
                              0
                              {:case-first "lower"})]
-   (doseq [single-result result]
-    (println single-result))
-   ))
+    (doseq [single-result result]
+     (println single-result))
+    ))
 
