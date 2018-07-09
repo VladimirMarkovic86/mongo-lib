@@ -2,30 +2,41 @@
   (:require [clojure.string :as cs :refer [index-of]]
             [clojure.java.shell :refer [sh]]))
 
-(def obj-start "{")
+(def obj-start
+     "{")
 
-(def obj-end "}")
+(def obj-end
+     "}")
 
-(def list-start "[")
+(def list-start
+     "[")
 
-(def list-end "]")
+(def list-end
+     "]")
 
-(def quote-char "\"")
+(def quote-char
+     "\"")
 
-(def apostrophe "'")
+(def apostrophe
+     "'")
 
-(def property-separator ",")
+(def property-separator
+     ",")
 
-(def key-value-separator ":")
+(def key-value-separator
+     ":")
 
-(def blank-space " ")
+(def blank-space
+     " ")
 
-(def before-data ["NumberLong("])
+(def before-data
+     ["NumberLong("])
 
-(def closing-parentheses ")")
+(def closing-parentheses
+     ")")
 
 (defn return-minimal-index
-  ""
+  "Return minimal index from passed vector"
   [indexes-vector]
   (let [lazy-seq (map
                    (fn [param]
@@ -40,7 +51,8 @@
   )
 
 (defn read-string-fn
-  ""
+  "Values that in mongo db have function like presentation as NumberLong(#)
+   this function removes text and reads rest of string to convert it to clojure data type"
   [obj-as-string]
   (let [obj-atom (atom obj-as-string)]
     (doseq [text before-data]
@@ -59,7 +71,7 @@
  )
 
 (defn substring-r-out
-  ""
+  "Removes everything before index from r-out string atom"
   [r-out
    index]
   (swap!
@@ -77,7 +89,7 @@
   r-out)
 
 (defn parse-mongo
-  ""
+  "Parses mongo objects from string into clojure map or vector representations"
   [r-out
    object
    obj-start-level
@@ -338,7 +350,7 @@
  )
 
 (defn read-mongo
-  ""
+  "Test function"
   []
   (try
     (let [result (sh "mongo" "--quiet" "localhost:27017/personal-organiser-db" :in "DBQuery.shellBatchSize=3000;db.grocery.find();")
