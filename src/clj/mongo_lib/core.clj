@@ -54,14 +54,12 @@
             (MongoClientOptions/builder))
          ))
      )
-    (swap!
+    (reset!
       db
-      (fn [db-input]
-        (.getDatabase
-          @conn
-          db-name))
-     ))
- )
+      (.getDatabase
+        @conn
+        db-name))
+   ))
 
 (defn mongodb-disconnect
   "Disconnect from mongo"
