@@ -104,7 +104,7 @@
                                     (BsonBoolean.
                                       c-value-p))
                                  )
-                                (when (instance? Long
+                                #_(when (instance? Long
                                                  c-value-p)
                                   (reset!
                                     new-value
@@ -118,8 +118,10 @@
                                     (BsonString.
                                       c-value-p))
                                  )
-                                (when (instance? Double
-                                                 c-value-p)
+                                (when (or (instance? Long
+                                                     c-value-p)
+                                          (instance? Double
+                                                     c-value-p))
                                   (reset!
                                     new-value
                                     (BsonDouble.
