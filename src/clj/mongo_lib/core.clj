@@ -403,7 +403,7 @@
    ))
 
 (defn mongodb-delete-by-filter
-  ""
+  "Delete records when filter is matched"
   [collection
    filter-map]
   (let [collection (if (string? collection)
@@ -433,7 +433,7 @@
    ))
 
 (defn mongodb-exists
-  ""
+  "Does any or records that match filter exists"
   [collection
    & [entity-filter]]
   (let [count-result (mongodb-count
