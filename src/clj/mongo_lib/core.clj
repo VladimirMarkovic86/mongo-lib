@@ -6,9 +6,7 @@
            [java.util Date
                       ArrayList]
            [com.mongodb MongoClient
-                        MongoCredential
-                        MongoClientOptions
-                        ServerAddress]
+                        MongoClientURI]
            [com.mongodb.client.model Collation
                                      CollationCaseFirst
                                      IndexOptions]
@@ -31,35 +29,20 @@
 
 (defn mongodb-connect
   "Connect to mongo db"
-  [db-name]
-  (let [admin-db "admin"
-        username "admin"
-        password (char-array
-                   "passw0rd")
-        cred (MongoCredential/createCredential
-               username
-               admin-db
-               password)
-        host "127.0.0.1"
-        port 27017]
-    (swap!
-      conn
-      (fn [conn-input]
-        (MongoClient.
-          (ServerAddress.
-            host
-            port)
-          cred
-          (.build
-            (MongoClientOptions/builder))
-         ))
-     )
-    (reset!
-      db
-      (.getDatabase
-        @conn
-        db-name))
-   ))
+  [db-uri
+   db-name]
+  (reset!
+    conn
+    (MongoClient.
+      (MongoClientURI.
+        db-uri))
+   )
+  (reset!
+    db
+    (.getDatabase
+      @conn
+      db-name))
+ )
 
 (defn mongodb-disconnect
   "Disconnect from mongo"
@@ -337,12 +320,13 @@
                        db
                        collection
                        BsonDocument)
-                     collection)]
+                     collection)
+        new-document (build-document
+                       insert-document)]
     (.insertOne
       collection
-      (build-document
-        insert-document))
-   ))
+      new-document))
+ )
 
 (defn mongodb-insert-many
   "Insert many records in particular collection"
@@ -351,19 +335,15 @@
   (let [collection (if (string? collection)
                      (get-collection
                        db
-                       collection)
+                       collection
+                       BsonDocument)
                      collection)
         list-obj (java.util.ArrayList.)]
-   (doseq [insert-document insert-documents-vector]
-     (.add
-       list-obj
-       (build-document
-         insert-document))
-    )
-   (.insertMany
-     collection
-     list-obj))
- )
+    (doseq [insert-document insert-documents-vector]
+      (mongodb-insert-one
+        collection
+        insert-document))
+   ))
 
 (defn mongodb-update-by-id
   "Update record by id in particular collection with update-document"
