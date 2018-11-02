@@ -238,52 +238,49 @@
       limit
       skip
       collation]]
-  (time
-    (let [collection (if (string? collection)
-                       (get-collection
-                         db
-                         collection)
+  (let [collection (if (string? collection)
+                     (get-collection
+                       db
                        collection)
-          filter-doc (build-document
-                       filter-map)
-          projection-doc (build-document
-                           projection-map)
-          sort-doc (build-document
-                     sort-map)
-          limit (or limit
-                    0)
-          skip  (or skip
-                    0)
-          collation-obj (build-collation
-                          collation)
-          itr-result (.iterator
-                       (-> (.find
-                             collection
-                             filter-doc)
-                           (.projection
-                             projection-doc)
-                           (.sort
-                             sort-doc)
-                           (.limit
-                             limit)
-                           (.skip
-                             skip)
-                           (.collation
-                             collation-obj))
-                      )
-          result-all (atom [])]
-      (while (.hasNext
-               itr-result)
-        (swap!
-          result-all
-          conj
-          (build-clojure-document
-            (.next
-              itr-result))
-         ))
-      @result-all)
-   )
-  )
+                     collection)
+        filter-doc (build-document
+                     filter-map)
+        projection-doc (build-document
+                         projection-map)
+        sort-doc (build-document
+                   sort-map)
+        limit (or limit
+                  0)
+        skip  (or skip
+                  0)
+        collation-obj (build-collation
+                        collation)
+        itr-result (.iterator
+                     (-> (.find
+                           collection
+                           filter-doc)
+                         (.projection
+                           projection-doc)
+                         (.sort
+                           sort-doc)
+                         (.limit
+                           limit)
+                         (.skip
+                           skip)
+                         (.collation
+                           collation-obj))
+                    )
+        result-all (atom [])]
+    (while (.hasNext
+             itr-result)
+      (swap!
+        result-all
+        conj
+        (build-clojure-document
+          (.next
+            itr-result))
+       ))
+    @result-all))
 
 (defn mongodb-find-one
   "Find one record that matches filter-map
@@ -318,133 +315,112 @@
   "Insert one record in particular collection"
   [collection
    insert-document]
-  (time
-    (let [collection (if (string? collection)
-                       (get-collection
-                         db
-                         collection
-                         BsonDocument)
-                       collection)
-          new-document (build-document
-                         insert-document)]
-      (.insertOne
-        collection
-        new-document))
-   )
-  
+  (let [collection (if (string? collection)
+                     (get-collection
+                       db
+                       collection
+                       BsonDocument)
+                     collection)
+        new-document (build-document
+                       insert-document)]
+    (.insertOne
+      collection
+      new-document))
  )
 
 (defn mongodb-insert-many
   "Insert many records in particular collection"
   [collection
    insert-documents-vector]
-  (time
-    (let [collection (if (string? collection)
-                       (get-collection
-                         db
-                         collection
-                         BsonDocument)
-                       collection)
-          list-obj (java.util.ArrayList.)]
-      (doseq [insert-document insert-documents-vector]
-        (mongodb-insert-one
-          collection
-          insert-document))
-     )
-   )
-  )
+  (let [collection (if (string? collection)
+                     (get-collection
+                       db
+                       collection
+                       BsonDocument)
+                     collection)
+        list-obj (java.util.ArrayList.)]
+    (doseq [insert-document insert-documents-vector]
+      (mongodb-insert-one
+        collection
+        insert-document))
+   ))
 
 (defn mongodb-update-by-id
   "Update record by id in particular collection with update-document"
   [collection
    _id
    update-document]
-  (time
-    (let [collection (if (string? collection)
-                       (get-collection
-                         db
-                         collection)
-                       collection)]
-      (.updateOne
-        collection
-        (build-document
-          {:_id (BsonObjectId.
-                  (ObjectId. _id))}
-         )
-        (build-document
-          {:$set update-document}))
-     )
-   )
-  )
+  (let [collection (if (string? collection)
+                     (get-collection
+                       db
+                       collection)
+                     collection)]
+    (.updateOne
+      collection
+      (build-document
+        {:_id (BsonObjectId.
+                (ObjectId. _id))}
+       )
+      (build-document
+        {:$set update-document}))
+   ))
 
 (defn mongodb-delete-by-id
   "Delete record by _id"
   [collection
    _id]
-  (time
-    (let [collection (if (string? collection)
-                       (get-collection
-                         db
-                         collection)
-                       collection)]
-      (.deleteOne
-        collection
-        (build-document
-          {:_id (BsonObjectId.
-                  (ObjectId. _id))}
-         ))
-     )
-   )
-  )
+  (let [collection (if (string? collection)
+                     (get-collection
+                       db
+                       collection)
+                     collection)]
+    (.deleteOne
+      collection
+      (build-document
+        {:_id (BsonObjectId.
+                (ObjectId. _id))}
+       ))
+   ))
 
 (defn mongodb-delete-by-filter
   "Delete records when filter is matched"
   [collection
    filter-map]
-  (time
-    (let [collection (if (string? collection)
-                       (get-collection
-                         db
-                         collection)
-                       collection)]
-      (.deleteMany
-        collection
-        (build-document
-          filter-map))
-     )
-   )
-  )
+  (let [collection (if (string? collection)
+                     (get-collection
+                       db
+                       collection)
+                     collection)]
+    (.deleteMany
+      collection
+      (build-document
+        filter-map))
+   ))
 
 (defn mongodb-count
   "Count records from particular collection matching entity-filter"
   [collection
    & [entity-filter]]
-  (time
-    (let [collection (if (string? collection)
-                       (get-collection
-                         db
-                         collection)
-                       collection)]
-      (.count
-        collection
-        (build-document
-          entity-filter))
-     )
-   )
-  )
+  (let [collection (if (string? collection)
+                     (get-collection
+                       db
+                       collection)
+                     collection)]
+    (.count
+      collection
+      (build-document
+        entity-filter))
+   ))
 
 (defn mongodb-exists
   "Does any or records that match filter exists"
   [collection
    & [entity-filter]]
-  (time
-    (let [count-result (mongodb-count
-                         collection
-                         entity-filter)]
-      (> count-result
-         0))
-   )
-  
+  (let [count-result (mongodb-count
+                       collection
+                       entity-filter)]
+    (> count-result
+       0))
  )
 
 (defn mongodb-create-index
@@ -454,51 +430,45 @@
    index-name
    unique
    & [expire-after-seconds]]
-  (time
-    (let [collection (if (string? collection)
-                       (get-collection
-                         db
-                         collection)
+  (let [collection (if (string? collection)
+                     (get-collection
+                       db
                        collection)
-          index-options (-> (IndexOptions.)
-                            (.unique unique)
-                            (.name index-name))]
-      (when expire-after-seconds
-        (.expireAfter
-          index-options
-          expire-after-seconds
-          java.util.concurrent.TimeUnit/SECONDS))
-      (.createIndex
-        collection
-        (build-document
-          fields)
-        index-options))
-   )
-  
+                     collection)
+        index-options (-> (IndexOptions.)
+                          (.unique unique)
+                          (.name index-name))]
+    (when expire-after-seconds
+      (.expireAfter
+        index-options
+        expire-after-seconds
+        java.util.concurrent.TimeUnit/SECONDS))
+    (.createIndex
+      collection
+      (build-document
+        fields)
+      index-options))
  )
 
 (defn mongodb-list-indexes
   "List all mongo indexes of particular collection as clojure maps"
   [collection]
-  (time
-    (let [collection (if (string? collection)
-                       (get-collection
-                         db
-                         collection)
+  (let [collection (if (string? collection)
+                     (get-collection
+                       db
                        collection)
-          indexes-list (.listIndexes
-                         collection)
-          indexes-vector (atom [])]
-      (doseq [index indexes-list]
-        (swap!
-          indexes-vector
-          conj
-          (build-clojure-document
-            index))
-        )
-      @indexes-vector)
-   )
-  )
+                     collection)
+        indexes-list (.listIndexes
+                       collection)
+        indexes-vector (atom [])]
+    (doseq [index indexes-list]
+      (swap!
+        indexes-vector
+        conj
+        (build-clojure-document
+          index))
+      )
+    @indexes-vector))
 
 (defn- find-index
   "Helper function for index exists function"
@@ -524,32 +494,26 @@
   "Check if mongo index exists"
   [collection
    index-name]
-  (time
-    (let [indexes-list (mongodb-list-indexes
-                         collection)]
-      (find-index
-        indexes-list
-        index-name
-        0))
-   )
-  
+  (let [indexes-list (mongodb-list-indexes
+                       collection)]
+    (find-index
+      indexes-list
+      index-name
+      0))
  )
 
 (defn mongodb-drop-index
   "Drop mongo index on particular collection"
   [collection
    index-name]
-  (time
-    (let [collection (if (string? collection)
-                       (get-collection
-                         db
-                         collection)
-                       collection)]
-      (.dropIndex
-        collection
-        index-name))
-   )
-  
+  (let [collection (if (string? collection)
+                     (get-collection
+                       db
+                       collection)
+                     collection)]
+    (.dropIndex
+      collection
+      index-name))
  )
 
 (defn pretty-print
