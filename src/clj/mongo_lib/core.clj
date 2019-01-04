@@ -300,13 +300,14 @@
 (defn mongodb-find-by-id
   "Find record by id"
   [collection
-   _id]
+   _id
+   & [projection-map]]
   (first
     (mongodb-find
       collection
       {:_id (BsonObjectId.
               (ObjectId. _id))}
-      nil
+      projection-map
       nil
       1))
  )
