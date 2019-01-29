@@ -366,6 +366,27 @@
         {:$set update-document}))
    ))
 
+(defn mongodb-update-one
+  "Update one document that matches filter"
+  [collection
+   filter-map
+   update-map]
+  (let [collection (if (string?
+                         collection)
+                     (get-collection
+                       db
+                       collection)
+                     collection)
+        filter-doc (build-document
+                     filter-map)
+        update-doc (build-document
+                     update-map)]
+    (.updateOne
+      collection
+      filter-doc
+      update-doc))
+ )
+
 (defn mongodb-delete-by-id
   "Delete record by _id"
   [collection
