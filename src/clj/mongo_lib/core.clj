@@ -65,6 +65,18 @@
       document-class))
  )
 
+(defn mongodb-drop-collection
+  "Drops collection"
+  [collection]
+  (let [collection (if (string? collection)
+                     (get-collection
+                       db
+                       collection)
+                     collection)]
+    (.drop
+      collection))
+ )
+
 (defn build-document
   "Convert clojure like object into java Bson like object"
   [clj-document
