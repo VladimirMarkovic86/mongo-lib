@@ -1,4 +1,4 @@
-(defproject org.clojars.vladimirmarkovic86/mongo-lib "0.2.5"
+(defproject org.clojars.vladimirmarkovic86/mongo-lib "0.2.6"
   :description "Mongo library"
   :url "http://github.com/VladimirMarkovic86/mongo-lib"
   :license {:name "Eclipse Public License"
@@ -9,5 +9,6 @@
 
   :min-lein-version "2.0.0"
   
-  :source-paths ["src/clj"])
+  :source-paths ["src/clj"]
+  :test-paths ["test/clj"])
 
