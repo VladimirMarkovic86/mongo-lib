@@ -137,11 +137,11 @@
   
  )
 
-(deftest test-mongo-drop-database
+(deftest test-mongodb-drop-database
   
   (testing "Test mongo drop database"
     
-    (let [result (mongo-drop-database
+    (let [result (mongodb-drop-database
                    nil)]
       
       (is
@@ -151,7 +151,7 @@
       
      )
     
-    (let [result (mongo-drop-database
+    (let [result (mongodb-drop-database
                    "")]
       
       (is
@@ -161,7 +161,7 @@
       
      )
     
-    (let [result (mongo-drop-database
+    (let [result (mongodb-drop-database
                    "test-db")]
       
       (is

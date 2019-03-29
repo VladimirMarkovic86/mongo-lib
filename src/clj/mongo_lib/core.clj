@@ -63,7 +63,7 @@
      ))
  )
 
-(defn mongo-drop-database
+(defn mongodb-drop-database
   "Drop mongo database"
   [db-name
    & [connection]]
