@@ -634,8 +634,16 @@
                        collection)
           filter-doc (build-document
                        filter-map)
+          update-map (if (or (contains?
+                               update-map
+                               :$set)
+                             (contains?
+                               update-map
+                               :$addToSet))
+                       update-map
+                       {:$set update-map})
           update-doc (build-document
-                       {:$set update-map})]
+                       update-map)]
       (.updateOne
         collection
         filter-doc

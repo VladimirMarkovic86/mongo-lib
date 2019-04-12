@@ -1,4 +1,4 @@
-(defproject org.clojars.vladimirmarkovic86/mongo-lib "0.2.7"
+(defproject org.clojars.vladimirmarkovic86/mongo-lib "0.2.8"
   :description "Mongo library"
   :url "http://github.com/VladimirMarkovic86/mongo-lib"
   :license {:name "Eclipse Public License"
