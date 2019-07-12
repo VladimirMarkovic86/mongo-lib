@@ -1,6 +1,9 @@
 (ns mongo-lib.core-test
   (:require [clojure.test :refer :all]
-            [mongo-lib.core :refer :all]))
+            [mongo-lib.core :refer :all])
+  (:import [com.mongodb.client MongoClient]
+           [com.mongodb.client.internal MongoDatabaseImpl
+                                        MongoCollectionImpl]))
 
 (def db-uri
      (or (System/getenv "MONGODB_URI")
@@ -72,7 +75,7 @@
       
       (is
         (instance?
-          com.mongodb.MongoClient
+          MongoClient
           mongodb-connection)
        )
       
@@ -107,7 +110,7 @@
       
       (is
         (instance?
-          com.mongodb.MongoDatabaseImpl
+          MongoDatabaseImpl
           mongo-database)
        )
       
@@ -127,7 +130,7 @@
       
       (is
         (instance?
-          com.mongodb.MongoDatabaseImpl
+          MongoDatabaseImpl
           mongo-database)
        )
       
@@ -328,7 +331,7 @@
       
       (is
         (instance?
-          com.mongodb.MongoCollectionImpl
+          MongoCollectionImpl
           mongo-collection)
        )
       

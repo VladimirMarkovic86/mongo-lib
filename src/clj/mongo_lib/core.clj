@@ -6,10 +6,10 @@
                       Double]
            [java.util Date
                       ArrayList]
-           [com.mongodb MongoClient
-                        MongoClientURI
-                        MongoDatabaseImpl
-                        MongoCollectionImpl]
+           [com.mongodb.client MongoClients
+                               MongoClient]
+           [com.mongodb.client.internal MongoDatabaseImpl
+                                        MongoCollectionImpl]
            [com.mongodb.client.model Collation
                                      CollationCaseFirst
                                      IndexOptions]
@@ -37,10 +37,9 @@
   (when (and db-uri
              (string?
                db-uri))
-    (MongoClient.
-      (MongoClientURI.
-        db-uri))
-   ))
+    (MongoClients/create
+      db-uri))
+ )
 
 (defn mongodb-get-database
   "Get database from connection"
@@ -93,9 +92,12 @@
 (defn mongodb-connect
   "Connect to mongo db"
   [db-uri
-   db-name]
-  (let [made-connection (mongodb-make-connection
-                          db-uri)
+   db-name
+   & [is-mobile]]
+  (let [made-connection (if is-mobile
+                          db-uri
+                          (mongodb-make-connection
+                            db-uri))
         fetched-database (mongodb-get-database
                            db-name
                            made-connection)]
