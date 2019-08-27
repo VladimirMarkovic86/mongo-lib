@@ -31,6 +31,17 @@
 (def db
      (atom nil))
 
+(defn object-id
+  "Returns string id as ObjectId"
+  [_id-as-string]
+  (when (and _id-as-string
+             (string?
+               _id-as-string))
+    (BsonObjectId.
+      (ObjectId.
+        _id-as-string))
+   ))
+
 (defn mongodb-make-connection
   "Creates connection to mongo client"
   [db-uri]

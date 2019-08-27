@@ -50,6 +50,34 @@
 
 (use-fixtures :each before-and-after-tests)
 
+(deftest test-object-id
+  (testing "Test object id"
+    
+    (let [_id-as-string nil
+          result (object-id
+                   _id-as-string)]
+      
+      (is
+        (nil?
+          result)
+       )
+      
+     )
+    
+    (let [_id-as-string "5d56a11aea3d031ff62697da"
+          result (object-id
+                   _id-as-string)]
+      
+      (is
+        (instance?
+          org.bson.BsonObjectId
+          result)
+       )
+      
+     )
+    
+   ))
+
 (deftest test-mongodb-make-connection
   
   (testing "Test mongodb make connection"
